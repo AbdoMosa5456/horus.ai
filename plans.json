@@ -1,0 +1,25 @@
+{
+    "plans": [
+        {
+            "id": "free",
+            "name": "مجاني",
+            "balance_limit": 1000,
+            "price": 0
+        },
+        {
+            "id": "plus",
+            "name": "Plus",
+            "balance_limit": 0,
+            "price": 10
+        },
+        {
+            "id": "pro",
+            "name": "Pro",
+            "balance_limit": 0,
+            "price": 50
+        }
+    ],
+    "default_free_balance": 1000,
+    "default_plus_balance": 0,
+    "default_pro_balance": 0
+}
