@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUsers } from '../../utils/api';
+import { getAllUsers } from '../../utils/api';
 import './Auth.css';
 
 const Login = ({ setUser }) => {
@@ -19,7 +19,7 @@ const Login = ({ setUser }) => {
     }
 
     try {
-      const data = await getUsers();
+      const data = await getAllUsers();
       const user = data.data.users.find(u => u.username === username && u.password === password);
       
       if (user) {

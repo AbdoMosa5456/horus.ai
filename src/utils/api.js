@@ -1,63 +1,104 @@
-import axios from 'axios';
+import { getUsers, saveUsers, getPlans, getChats, saveChats, initStorage } from './storage';
 
-const API_URL = '/api';
+initStorage();
 
 export const checkMaintenance = async () => {
-  const response = await axios.post(API_URL, { action: 'check_maintenance' });
-  return response.data;
+  return { success: true, enabled: false };
 };
 
 export const checkEmail = async (email) => {
-  const response = await axios.post(API_URL, { action: 'check_email', email });
-  return response.data;
+  const users = getUsers();
+  const exists = users.users.some(u => u.email === email);
+  return { success: true, exists };
 };
 
 export const checkUsername = async (username) => {
-  const response = await axios.post(API_URL, { action: 'check_username', username });
-  return response.data;
+  const users = getUsers();
+  const exists = users.users.some(u => u.username === username);
+  return { success: true, exists };
 };
 
 export const createUser = async (userData) => {
-  const response = await axios.post(API_URL, { action: 'create_user', ...userData });
-  return response.data;
+  const users = getUsers();
+  const plans = getPlans();
+  const balance = plans[`default_${userData.plan || 'free'}_balance`] || 1000;
+  
+  users.users.push({
+    ...userData,
+    balance,
+    initial_balance: balance,
+    created_at: new Date().toISOString()
+  });
+  
+  saveUsers(users);
+  return { success: true, message: 'تم إنشاء الحساب بنجاح' };
 };
 
-export const getUsers = async () => {
-  const response = await axios.get(API_URL);
-  return response.data;
+export const getAllUsers = async () => {
+  return { success: true, data: getUsers() };
 };
 
 export const updateBalance = async (username, balance) => {
-  const response = await axios.post(API_URL, { action: 'update_balance', username, balance });
-  return response.data;
+  const users = getUsers();
+  const user = users.users.find(u => u.username === username);
+  if (user) {
+    user.balance = balance;
+    saveUsers(users);
+    return { success: true };
+  }
+  return { success: false };
 };
 
 export const updatePlan = async (username, plan) => {
-  const response = await axios.post(API_URL, { action: 'update_plan', username, plan });
-  return response.data;
+  const users = getUsers();
+  const user = users.users.find(u => u.username === username);
+  if (user) {
+    user.plan = plan;
+    saveUsers(users);
+    return { success: true };
+  }
+  return { success: false };
 };
 
 export const deleteUser = async (username) => {
-  const response = await axios.post(API_URL, { action: 'delete_user', username });
-  return response.data;
+  const users = getUsers();
+  users.users = users.users.filter(u => u.username !== username);
+  saveUsers(users);
+  localStorage.removeItem(`horus_chats_${username}`);
+  return { success: true };
 };
 
 export const checkBalance = async (username) => {
-  const response = await axios.post(API_URL, { action: 'check_balance', username });
-  return response.data;
+  const users = getUsers();
+  const user = users.users.find(u => u.username === username);
+  if (user) {
+    return {
+      success: true,
+      balance: user.balance,
+      initial_balance: user.initial_balance,
+      plan: user.plan,
+      can_send: user.balance >= 0.03
+    };
+  }
+  return { success: false, message: 'user_deleted' };
 };
 
 export const deductBalance = async (username, amount) => {
-  const response = await axios.post(API_URL, { action: 'deduct_balance', username, amount });
-  return response.data;
+  const users = getUsers();
+  const user = users.users.find(u => u.username === username);
+  if (user) {
+    user.balance = Math.max(0, user.balance - amount);
+    saveUsers(users);
+    return { success: true, balance: user.balance };
+  }
+  return { success: false };
 };
 
-export const saveChats = async (username, chats) => {
-  const response = await axios.post(API_URL, { action: 'save_chats', username, chats });
-  return response.data;
+export const saveUserChats = async (username, chats) => {
+  saveChats(username, chats);
+  return { success: true };
 };
 
 export const loadChats = async (username) => {
-  const response = await axios.post(API_URL, { action: 'load_chats', username });
-  return response.data;
+  return { success: true, chats: getChats(username) };
 };

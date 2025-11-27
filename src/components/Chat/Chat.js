@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { checkBalance, deductBalance, saveChats, loadChats } from '../../utils/api';
+import { checkBalance, deductBalance, saveUserChats, loadChats } from '../../utils/api';
 import Sidebar from './Sidebar';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
